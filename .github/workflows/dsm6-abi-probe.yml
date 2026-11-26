@@ -1,0 +1,95 @@
+name: DSM 6 Bromolow compatibility probe
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/prepare-dsm6-target.mjs'
+      - '.github/workflows/dsm6-abi-probe.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dsm6-abi-probe-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-check:
+    name: Build SPK and check DSM 6 ABI
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Check out pinned Motrix source
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.23.0
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+          cache: pnpm
+          cache-dependency-path: upstream/Motrix/pnpm-lock.yaml
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.94.1
+          targets: x86_64-unknown-linux-musl
+
+      - name: Confirm Bromolow target and toolchain checksum
+        working-directory: upstream/Motrix
+        run: node ../../scripts/prepare-dsm6-target.mjs
+
+      - name: Install upstream dependencies
+        working-directory: upstream/Motrix
+        run: pnpm install --frozen-lockfile
+        env:
+          MOTRIX_SKIP_ELECTRON_REBUILD: '1'
+          MOTRIX_SKIP_ENGINE_FETCH: '1'
+
+      - name: Fetch locked Aria2 engine
+        working-directory: upstream/Motrix
+        run: pnpm run fetch:engine -- --platform linux --arch x64
+
+      - name: Build Motrix Server and Web UI
+        working-directory: upstream/Motrix
+        run: pnpm run build:server
+
+      - name: Verify third-party license inventory
+        working-directory: upstream/Motrix
+        run: pnpm run check:third-party-notices
+
+      - name: Stage the native server package
+        working-directory: upstream/Motrix
+        run: pnpm run stage:server -- --platform linux --arch x64 --libc gnu --strict
+
+      - name: Build SPK and inspect against Bromolow DSM 6.2.4 sysroot
+        working-directory: upstream/Motrix
+        run: >-
+          pnpm run build:synology --
+          --arch x64
+          --revision 1
+          --output-dir release/synology-6.2/project
+
+      - name: Upload diagnostic package and ABI report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Motrix-SPK-DSM6-ABI-probe
+          path: |
+            upstream/Motrix/release/synology-6.2/*.spk
+            upstream/Motrix/release/synology-6.2/*.sha256
+            upstream/Motrix/release/synology-6.2/*.abi.json
+            upstream/Motrix/release/synology-6.2/project/app/synology-build.json
+          if-no-files-found: warn
+          retention-days: 7
