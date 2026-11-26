@@ -73,6 +73,21 @@ jobs:
         working-directory: upstream/Motrix
         run: pnpm run stage:server -- --platform linux --arch x64 --libc gnu --strict
 
+      - name: Download and verify the locked Bromolow SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          cache="upstream/Motrix/node_modules/.cache/synology"
+          file="$cache/84c39e280bc4c70dcb7f74dd45dfe6c71e393433dcf55a2428087a879a4d9636-download"
+          mkdir -p "$cache"
+          if [[ ! -f "$file" ]] || ! echo "84c39e280bc4c70dcb7f74dd45dfe6c71e393433dcf55a2428087a879a4d9636  $file" | sha256sum --check --status; then
+            rm -f "$file"
+            curl --fail --location --retry 4 --retry-all-errors --connect-timeout 30 --max-time 900 \
+              "https://sourceforge.net/projects/dsgpl/files/Tool%20Chain/DSM%206.2.4%20Tool%20Chains/Intel%20x86%20linux%203.10.105%20%28Bromolow%29/bromolow-gcc493_glibc220_linaro_x86_64-GPL.txz/download" \
+              --output "$file"
+          fi
+          echo "84c39e280bc4c70dcb7f74dd45dfe6c71e393433dcf55a2428087a879a4d9636  $file" | sha256sum --check
+
       - name: Build SPK and inspect against Bromolow DSM 6.2.4 sysroot
         working-directory: upstream/Motrix
         run: >-
