@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 
 const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
-  '../../upstream/Motrix'
+  '../upstream/Motrix'
 )
 const expectedCommit = '0ad4223f9d8c1c5a989a83035d75e7e7a7498b2b'
 const expectedToolchainSha256 =
