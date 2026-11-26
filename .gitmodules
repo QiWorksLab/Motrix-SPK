@@ -1,0 +1,3 @@
+[submodule "upstream/Motrix"]
+	path = upstream/Motrix
+	url = https://github.com/agalwood/Motrix.git
