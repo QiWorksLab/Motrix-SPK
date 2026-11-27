@@ -85,12 +85,18 @@ jobs:
               export npm_config_nodedir=/node
               export PYTHON="$(find -L /opt/python -path "*/bin/python3" -executable -print -quit)"
               test -x "$PYTHON"
+              export CXXFLAGS="-static-libstdc++ -static-libgcc"
+              export LDFLAGS="-static-libstdc++ -static-libgcc"
               node --version
               npm install --global node-gyp@12.4.0
               export PATH="/tmp/npm-global/bin:$PATH"
               node-gyp rebuild --release --force_build=1 --directory node_modules/better-sqlite3
               cp node_modules/better-sqlite3/build/Release/better_sqlite3.node \
                 node_modules/better-sqlite3/prebuilds/linux-x64.node
+              if readelf -d node_modules/better-sqlite3/prebuilds/linux-x64.node | grep -q "NEEDED.*libstdc++\|NEEDED.*libgcc_s"; then
+                echo "SQLite addon still depends on dynamic C++ runtimes" >&2
+                exit 1
+              fi
               node -e "const DB=require(\"better-sqlite3\");const db=new DB(\":memory:\");db.exec(\"create table t(v);insert into t values(42)\");if(db.prepare(\"select v from t\").get().v!==42)process.exit(1);db.close();console.log(\"SQLite native addon smoke passed\")"
             '
 
@@ -109,6 +115,12 @@ jobs:
       - name: Stage the native server package
         working-directory: upstream/Motrix
         run: pnpm run stage:server -- --platform linux --arch x64 --libc gnu --strict
+
+      - name: Cache the locked Bromolow SDK
+        uses: actions/cache@v4
+        with:
+          path: upstream/Motrix/node_modules/.cache/synology
+          key: bromolow-sdk-84c39e280bc4c70dcb7f74dd45dfe6c71e393433dcf55a2428087a879a4d9636
 
       - name: Download and verify the locked Bromolow SDK
         shell: bash
