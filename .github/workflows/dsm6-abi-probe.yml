@@ -77,13 +77,13 @@ jobs:
             -v "$GITHUB_WORKSPACE:/workspace" \
             -v "$runtime:/node:ro" \
             -w /workspace/upstream/Motrix \
-            quay.io/pypa/manylinux2014_x86_64 \
+            quay.io/pypa/manylinux2014_x86_64@sha256:8a79ff36ce155d8f242dc8013d73c5e8bbe937defb15de7d7afb342c1ab537f4 \
             bash -lc '
               set -euo pipefail
               export PATH="/node/bin:$PATH"
               export npm_config_prefix=/tmp/npm-global
               export npm_config_nodedir=/node
-              export PYTHON="$(find /opt/python -path "*/bin/python3" -type f -print -quit)"
+              export PYTHON="$(find -L /opt/python -path "*/bin/python3" -executable -print -quit)"
               test -x "$PYTHON"
               node --version
               npm install --global node-gyp@12.4.0
