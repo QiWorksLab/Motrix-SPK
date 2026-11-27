@@ -130,6 +130,32 @@ info = info.replace(
 )
 await write(infoPath, info)
 
+// DSM 6.2 does not provide SYNOPKG_PKGVAR; retain compatibility with its package var symlink.
+const lifecycleScripts = [
+  'postinst',
+  'preupgrade',
+  'postupgrade',
+  'preuninst',
+  'start-stop-status',
+]
+for (const name of lifecycleScripts) {
+  const relative = path.join('packaging/synology/scripts', name)
+  let script = await read(relative)
+  const marker = 'unset NODE_OPTIONS NODE_PATH LD_PRELOAD LD_LIBRARY_PATH\n'
+  const fallback =
+    '# DSM 6 package data directory fallback.\n' +
+    'SYNOPKG_PKGVAR="${SYNOPKG_PKGVAR:-/var/packages/Motrix/var}"\n' +
+    'export SYNOPKG_PKGVAR\n'
+  if (!script.includes(marker)) {
+    throw new Error(`Unexpected Synology lifecycle script: ${name}`)
+  }
+  if (script.includes('SYNOPKG_PKGVAR="${SYNOPKG_PKGVAR:-/var/packages/Motrix/var}"')) {
+    continue
+  }
+  script = script.replace(marker, marker + fallback)
+  await write(relative, script)
+}
+
 console.log(
   JSON.stringify(
     {
