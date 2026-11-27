@@ -104,7 +104,7 @@ MDXP 使用 JSON-RPC 2.0 一请求一消息；**不支持 JSON-RPC batch envelop
 
 ## 4. 下载目录选择：`download/directories`
 
-只有初始化结果声明 `capabilities.downloadDirectories === true) 时才能调用。请求为严格空对象：
+只有初始化结果声明 `capabilities.downloadDirectories === true 时才能调用。请求为严格空对象：
 
 ```json
 {}
