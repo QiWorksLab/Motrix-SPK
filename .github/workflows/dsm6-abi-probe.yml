@@ -83,6 +83,8 @@ jobs:
               export PATH="/node/bin:$PATH"
               export npm_config_prefix=/tmp/npm-global
               export npm_config_nodedir=/node
+              export PYTHON="$(find /opt/python -path "*/bin/python3" -type f -print -quit)"
+              test -x "$PYTHON"
               node --version
               npm install --global node-gyp@12.4.0
               export PATH="/tmp/npm-global/bin:$PATH"
