@@ -98,6 +98,14 @@ if (!verifier.includes(oldRuntimeCheck)) {
   throw new Error('Unexpected Synology runtime verification check')
 }
 verifier = verifier.replace(oldRuntimeCheck, newRuntimeCheck)
+const oldGlibcCheck =
+  "if loaded['glibc'] != lock['glibc'] or loaded['arch'] != arch:"
+const newGlibcCheck =
+  "if (loaded['glibc'] != lock['glibc'] and not loaded['glibc'].startswith(lock['glibc'] + '-')) or loaded['arch'] != arch:"
+if (!verifier.includes(oldGlibcCheck)) {
+  throw new Error('Unexpected Synology glibc version check')
+}
+verifier = verifier.replace(oldGlibcCheck, newGlibcCheck)
 await write(verifierPath, verifier)
 
 const infoPath = 'packaging/synology/INFO'
