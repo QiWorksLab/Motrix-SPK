@@ -71,7 +71,8 @@ jobs:
           mkdir -p "$runtime"
           tar -xJf "$archive" --strip-components=1 -C "$runtime" \
             "node-v${version}-linux-x64-glibc-217/bin" \
-            "node-v${version}-linux-x64-glibc-217/include"
+            "node-v${version}-linux-x64-glibc-217/include" \
+            "node-v${version}-linux-x64-glibc-217/lib"
           docker run --rm --platform linux/amd64 \
             -v "$GITHUB_WORKSPACE:/workspace" \
             -v "$runtime:/node:ro" \
