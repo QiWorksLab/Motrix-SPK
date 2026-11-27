@@ -128,6 +128,11 @@ info = info.replace(
   'os_min_ver="7.2.2-72806"',
   `os_min_ver="${dsmVersion}"`
 )
+if (!info.includes('displayname="Motrix"') || !info.includes('beta="yes"')) {
+  throw new Error('Unexpected upstream display name or beta metadata')
+}
+info = info.replace('displayname="Motrix"', 'displayname="Motrix-SPK"')
+info = info.replace('beta="yes"', 'beta="no"')
 await write(infoPath, info)
 
 // DSM 6.2 does not provide SYNOPKG_PKGVAR; retain compatibility with its package var symlink.
