@@ -16,6 +16,7 @@ const nodeArchiveSha256 =
 const nodeBinarySha256 =
   'd09440b3d78298e285c342a2f15a0924c278e0a2cfbbc1b057f8e5ebf69bbd43'
 const dsmVersion = '6.2.3-25426'
+const packageVersion = '1.0.0'
 
 async function read(relative) {
   return readFile(path.join(root, relative), 'utf8')
@@ -76,6 +77,16 @@ nodeLock.node.x64 = {
 }
 await write(nodeLockPath, `${JSON.stringify(nodeLock, null, 2)}\n`)
 
+// Keep the upstream source pinned at Motrix 2.4.7 while assigning the native
+// Synology package its independent Motrix-SPK release version.
+const manifestPath = 'package.json'
+const manifest = JSON.parse(await read(manifestPath))
+if (manifest.version !== '2.4.7') {
+  throw new Error(`Unexpected pinned Motrix version: ${manifest.version}`)
+}
+manifest.version = packageVersion
+await write(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`)
+
 // The unofficial archive adds `-glibc-217` to its top-level directory.
 const preparePath = 'scripts/prepare-synology-project.mjs'
 let prepare = await read(preparePath)
@@ -128,6 +139,7 @@ console.log(
       sysroot: 'DSM 6.2.4 Bromolow, kernel 3.10.105, glibc 2.20',
       toolchainSha256: expectedToolchainSha256,
       nodeRuntime: `Node.js v${nodeVersion} glibc-2.17 x64 build`,
+      packageVersion,
       nodeArchiveSha256,
       nodeBinarySha256,
       note: 'Probe only: package is not installable until ABI and NAS acceptance pass.',
