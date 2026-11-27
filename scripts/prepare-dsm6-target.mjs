@@ -88,6 +88,18 @@ if (!prepare.includes(oldPrefix)) {
 prepare = prepare.replace(oldPrefix, newPrefix)
 await write(preparePath, prepare)
 
+const verifierPath = 'scripts/verify_synology_abi.py'
+let verifier = await read(verifierPath)
+const oldRuntimeCheck =
+  "raise ValueError('Node did not load the target DSM libc and SQLite')"
+const newRuntimeCheck =
+  "raise ValueError(f'Node did not load the target DSM libc and SQLite: {loaded!r}')"
+if (!verifier.includes(oldRuntimeCheck)) {
+  throw new Error('Unexpected Synology runtime verification check')
+}
+verifier = verifier.replace(oldRuntimeCheck, newRuntimeCheck)
+await write(verifierPath, verifier)
+
 const infoPath = 'packaging/synology/INFO'
 let info = await read(infoPath)
 if (!info.includes('os_min_ver="7.2.2-72806"')) {
