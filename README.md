@@ -34,4 +34,8 @@ Motrix 上游采用 MIT 许可证，版权声明为 Dr_rOot（2018 至今）。�
 
 ## 构建与安装
 
-正式构建脚本、自动化工作流和简体中文安装指南会在通过目标环境验证后补齐。正式版发布后，本节将提供 SPK、SHA-256 校验值及 GitHub Release 链接。
+仓库已包含面向 Bromolow x86_64 的 DSM 6 兼容构建工作流。工作流会固定上游源码、DSM 工具链、Node 运行时和 Aria2 版本，构建 SPK 并检查 Node、SQLite 原生模块及 Aria2 的 ABI。
+
+当前状态：CI 已通过 SPK 构建和 ABI 检查；尚未在目标 DS3615xs-j 上完成套件安装、启动、重启、覆盖升级、卸载及真实下载验收。因此暂不发布正式 Release，也不把 CI 构建结果称为已验收正式版。通过 NAS 实测后，将在此补充可直接下载的正式 SPK、SHA-256 校验值和 GitHub Release 链接。
+
+构建产物可在仓库 Actions 的对应工作流运行记录中获取；Actions 临时产物会过期，正式使用请等待 GitHub Release。
