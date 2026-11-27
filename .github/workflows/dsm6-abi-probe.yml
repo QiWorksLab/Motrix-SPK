@@ -81,9 +81,11 @@ jobs:
             bash -lc '
               set -euo pipefail
               export PATH="/node/bin:$PATH"
+              export npm_config_prefix=/tmp/npm-global
               export npm_config_nodedir=/node
               node --version
               npm install --global node-gyp@12.4.0
+              export PATH="/tmp/npm-global/bin:$PATH"
               node-gyp rebuild --release --directory node_modules/better-sqlite3
               cp node_modules/better-sqlite3/build/Release/better_sqlite3.node \
                 node_modules/better-sqlite3/prebuilds/linux-x64.node
